@@ -1,4 +1,4 @@
-package game.tabu
+package game.basics
 
 /**
 * Holds the several players 

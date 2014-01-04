@@ -1,10 +1,10 @@
-package game.tabu
+package game.basics
 
 class Game(val name:String,val numTeams:Int){
-	
+	def this(name:String)=this(name,2)
 	protected val teamList=Array.fill(numTeams){new Team()}
 	protected var teamCounter=0
-	def this(name:String)=this(name,2)
+	
 	def join(p:Player){
 		p.teamId=Some(this.teamCounter)
 		this.teamList(this.teamCounter)+p
@@ -24,4 +24,6 @@ class Game(val name:String,val numTeams:Int){
 			this.players-=p.id
 		}
 	}
+	
 }	
+
