@@ -1,39 +1,20 @@
 import java.net._
 import java.io._
-import scala.actors.Actor
-import scala.actors.Actor._
 import scala.io._
+import game.io._
 //import  game.basics._
 /**
 * Ator que cuida da obtenção de comandos vindo do socket
 */
-class SocketActor(protected val sock:Socket,protected val connId:Int) extends Actor{
-	protected val in:BufferedReader=new BufferedReader(new InputStreamReader(sock.getInputStream()))
-	protected val out:PrintWriter= new PrintWriter(sock.getOutputStream(), true)
-	def act(){
-		try{
-			
-			println("Usuario"+this.connId+" inicializado")
-			var close=false
-			while(!close){
-				var input=in.readLine()
-				if(input==null){ //fim da stream ?
-					close=true
-				}
-				else{
-					println("Recebido "+input)
-				}
-			}
-			println("Cliente "+this.connId+" finalizado normalmente")
-		}
-		catch{
-			case e:Throwable=>{
-				println("Exceção cliente "+this.connId+" finalizado")
-				sock.close()
-			}
-		}
-	}
+class receiverActor(protected val sock:Socket,protected val connId:Int) extends {
+	//Early initializer
 }
+ with SocketActor{
+ 	def sendHello(){
+		this.sendMessage("Bem vindo! voce esta conectado , digite -h para ajuda")
+	}
+	this.sendHello()
+ }
 object TabuServer{
 	
 	def main(args:Array[String])={
@@ -46,7 +27,7 @@ object TabuServer{
 			while (true) {
 			    val s = server.accept()
 			    println("Recebido conexão")
-			    var a =new SocketActor(s,connId)
+			    var a =new receiverActor(s,connId)
 			    a.start()
 			    connId+=1
 			}
