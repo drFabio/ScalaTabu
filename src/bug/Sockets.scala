@@ -11,6 +11,7 @@ trait SocketActor extends Actor{
 	/**
 	 * @note Usando def em trait para inicialização tardia
 	 */
+	
 	protected def sock:Socket
 
 	// protected val oin:ObjectInputStream=new ObjectInputStream(this.sock.getInputStream())
@@ -29,14 +30,10 @@ trait SocketActor extends Actor{
 					ok=false
 				}
 				else{
-					input match{
-						case str if str.startsWith("-")=>  command(str)
-						case str=> display(str)
-					}
-					
+					display(input)
 				}
 				/*
-				oin.readObject() match{
+				in.readObject() match{
 					case (Message.MESS,_)=>this.display(_)
 					case _=>println("???")
 				}*/
@@ -50,9 +47,6 @@ trait SocketActor extends Actor{
 		}
 
 	}
-	def command(command:String){
-		println("Comando recebido "+command)
-	}
 	/**
 	 * Mostra algum resultado para o usuario
 	 * @type {[type]}
@@ -65,7 +59,7 @@ trait SocketActor extends Actor{
 	 * @type String mensagem
 	 */
 	def sendMessage(mess:String){
-		//this.oout.writeObject((Message.MESS,mess))
+		//this.out.writeObject((Message.MESS,mess))
 		out.println(mess)
 	}
 	object Message extends Enumeration{

@@ -14,12 +14,9 @@ object TabuClient{
 	def main(args:Array[String]){
 		try{
 			println("Inicializado um cliente")
-			/**
-			 * @todo pegar do argumento
-			 */
 			val port=1337
 			val s = new Socket(InetAddress.getByName("localhost"), port)
-			
+			val out = new PrintStream(s.getOutputStream())
 			//Inicializa o ator que cuida dos sockets
 			val a=new PlayerActor(s)
 			a.start()
@@ -33,7 +30,6 @@ object TabuClient{
 			case e:Throwable=>{
 				e.printStackTrace()
 			}
-			
 		}
 	}	
 }
