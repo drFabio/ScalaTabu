@@ -9,7 +9,7 @@ import game.basics._
 * Ator que cuida da obtenção de comandos vindo do socket
 */
 class receiverActor(gh:GameHall,protected val sock:Socket,protected val connId:Int) extends {
-	protected var handler:Actor=gh
+	protected val handler=gh
 	//Early initializer
 }
  with SocketActor{

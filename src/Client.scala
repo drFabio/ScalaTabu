@@ -6,8 +6,8 @@ import game.io._
 /**
 * Ator que cuida da obtenção de comandos vindo do socket
 */
-class PlayerActor(protected val sock:Socket) extends {
-
+class PlayerActor(protected val sock:Socket) extends CommandActor{
+	protected val handler:Actor=this
 }
  with SocketActor
 object TabuClient{

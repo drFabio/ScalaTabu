@@ -6,6 +6,36 @@ import java.io._
 import scala.io._
 import java.util.Date;
 
+abstract class CommandActor extends Actor{
+
+}
+object CommandActor{
+	def parseCommand(cmd:String):List[(String,Option[String])]={
+		println("Recebido "+cmd)
+		var isCmd=true
+		var currentCmd:Option[String]=None
+		var cmdList:List[(String,Option[String])]=Nil
+		for(i<-cmd.split(' ')){
+			if(i.startsWith("-") !=isCmd ){
+				throw new IllegalArgumentException("ERRO:Por favor envie comandos no formaro -Comando Argumento -COmando2 Argumento .. -ComandoN argumento")
+			}
+			if(isCmd){
+				currentCmd=Some(i.substring(1))
+			}
+			else{
+				cmdList=(currentCmd.get,Some(i))::cmdList
+				currentCmd=None
+			}
+			isCmd=(!isCmd)
+		}
+		if(!currentCmd.isEmpty){
+			currentCmd=None
+			cmdList=(currentCmd.get,None)::cmdList
+		}
+		println(cmdList)
+		cmdList
+	}
+}
 /**
  * Lida com o recebimento e envio de mensagens de texto, parseando comandos e mensagens
  */
@@ -14,6 +44,7 @@ trait SocketActor extends Actor{
 	 * @note Usando def em trait para inicialização tardia
 	 */
 	protected def sock:Socket
+	protected def handler:CommandActor
 
 	// protected val oin:ObjectInputStream=new ObjectInputStream(this.sock.getInputStream())
 	// protected val oout:ObjectOutputStream = new ObjectOutputStream (this.sock.getOutputStream())
@@ -52,33 +83,7 @@ trait SocketActor extends Actor{
 		}
 
 	}
-	/**
-	 * Parseia um comando
-	 */
-	def parseCommand(cmd:String){
-		println("Recebido "+cmd)
-		var isCmd=true
-		var currentCmd:Option[String]=None
-		var cmdList:List[(String,Option[String])]=Nil
-		for(i<-cmd.split(' ')){
-			if(i.startsWith("-") !=isCmd ){
-				throw new IllegalArgumentException("ERRO:Por favor envie comandos no formaro -Comando Argumento -COmando2 Argumento .. -ComandoN argumento")
-			}
-			if(isCmd){
-				currentCmd=Some(i.substring(1))
-			}
-			else{
-				cmdList=(currentCmd.get,Some(i))::cmdList
-				currentCmd=None
-			}
-			isCmd=(!isCmd)
-		}
-		if(!currentCmd.isEmpty){
-			currentCmd=None
-			cmdList=(currentCmd.get,None)::cmdList
-		}
-		println(cmdList)
-	}
+
 	def executeCommand(cmdList:List[(String,Option[String])]){
 
 	}
@@ -87,7 +92,7 @@ trait SocketActor extends Actor{
 	 */
 	def handleInput(input:String){
 		input match{
-			case str if str.startsWith("-")=>  parseCommand(str)
+			case str if str.startsWith("-")=>  CommandActor.parseCommand(str)
 			case str=> display(str)
 		}
 	}
@@ -105,7 +110,4 @@ trait SocketActor extends Actor{
 		//this.oout.writeObject((Message.MESS,mess))
 		out.println(mess)
 	}
-
-
 }
-

@@ -1,12 +1,12 @@
 package game.basics
-
+import game.io.CommandActor
 import scala.actors.Actor
 import scala.actors.Actor._
 
 /**
 * Holds the several players 
 */
-class GameHall(val size:Int) extends Actor{
+class GameHall(val size:Int) extends CommandActor{
 
 	def act(){
 		loop{
