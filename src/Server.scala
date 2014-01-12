@@ -2,11 +2,14 @@ import java.net._
 import java.io._
 import scala.io._
 import game.io._
-//import  game.basics._
+import scala.actors.Actor
+import scala.actors.Actor._
+import game.basics._
 /**
 * Ator que cuida da obtenção de comandos vindo do socket
 */
-class receiverActor(protected val sock:Socket,protected val connId:Int) extends {
+class receiverActor(gh:GameHall,protected val sock:Socket,protected val connId:Int) extends {
+	protected var handler:Actor=gh
 	//Early initializer
 }
  with SocketActor{
@@ -16,8 +19,11 @@ class receiverActor(protected val sock:Socket,protected val connId:Int) extends 
 	this.sendHello()
  }
 object TabuServer{
-	
 	def main(args:Array[String])={
+		/**
+		 * @todo pegar argumento para numero de pessoas
+		 */
+		val gh:GameHall=new GameHall
 		try{
 			val port=1337
 			println("Iniciando servidor na porta "+port)
@@ -27,7 +33,7 @@ object TabuServer{
 			while (true) {
 			    val s = server.accept()
 			    println("Recebido conexão")
-			    var a =new receiverActor(s,connId)
+			    var a =new receiverActor(gh,s,connId)
 			    a.start()
 			    connId+=1
 			}

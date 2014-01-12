@@ -65,17 +65,17 @@ trait SocketActor extends Actor{
 				throw new IllegalArgumentException("ERRO:Por favor envie comandos no formaro -Comando Argumento -COmando2 Argumento .. -ComandoN argumento")
 			}
 			if(isCmd){
-				currentCmd=i.substring(1)
+				currentCmd=Some(i.substring(1))
 			}
 			else{
-				cmdList=(currentCmd,Some(i))::cmdList
+				cmdList=(currentCmd.get,Some(i))::cmdList
 				currentCmd=None
 			}
 			isCmd=(!isCmd)
 		}
 		if(!currentCmd.isEmpty){
 			currentCmd=None
-			cmdList=(currentCmd,None)::cmdList
+			cmdList=(currentCmd.get,None)::cmdList
 		}
 		println(cmdList)
 	}

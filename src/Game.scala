@@ -3,7 +3,7 @@ package game.basics
 *@fixme remover listbuffer e resolver só com list?
 */
 import scala.collection.mutable.ListBuffer
-class Game(val name:String,val numTeams:Int,val maxScore:Int){
+class Game(val index:Int,val name:String,val numTeams:Int,val maxScore:Int){
 	protected val teamList=Array.fill(numTeams){new Team()}
 	protected var joinCounter=0
 	protected var roundCounter=0
@@ -36,7 +36,7 @@ class Game(val name:String,val numTeams:Int,val maxScore:Int){
 	 * Achou uma palavra com sucesso definitivamente
 	 */
 	def foundWord(){
-		if(teamList(this.currentTeam).score()==this.max){
+		if(teamList(this.currentTeam).score()==this.maxScore){
 			this._endGame(this.currentTeam)
 		}
 		else{
@@ -55,8 +55,8 @@ class Game(val name:String,val numTeams:Int,val maxScore:Int){
 	 * Falou a palavra Tabu TODOS outros times acertam
 	 */
 	def tabu(){
-		for(i<-0 until this.numTeams;){
-			if(this.teamList(i).score()==this.max){
+		for(i<-0 until this.numTeams){
+			if(this.teamList(i).score()==this.maxScore){
 				this._endGame(i)
 			}
 			else{
@@ -82,8 +82,9 @@ class Game(val name:String,val numTeams:Int,val maxScore:Int){
 			}	
 			this.players.remove(index)
 		}
-		def score()={
+		def score():Int={
 			this._points+=1
+			return this._points
 		}
 		def getNextPlayer():Player={
 			val pos=this.position
