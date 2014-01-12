@@ -1,5 +1,4 @@
 package game.io
-
 import scala.actors.Actor
 import scala.actors.Actor._
 import java.net._
@@ -7,6 +6,9 @@ import java.io._
 import scala.io._
 import java.util.Date;
 
+/**
+ * Lida com o recebimento e envio de mensagens de texto, parseando comandos e mensagens
+ */
 trait SocketActor extends Actor{
 	/**
 	 * @note Usando def em trait para inicialização tardia
@@ -29,20 +31,20 @@ trait SocketActor extends Actor{
 					ok=false
 				}
 				else{
-					input match{
-						case str if str.startsWith("-")=>  command(str)
-						case str=> display(str)
+					try{
+						handleInput(input)
 					}
-					
+					catch{
+						case e:IllegalArgumentException=>{
+							sendMessage(e.getMessage)
+						}
+						
+					}
 				}
-				/*
-				oin.readObject() match{
-					case (Message.MESS,_)=>this.display(_)
-					case _=>println("???")
-				}*/
 			}
 		}
 		catch{
+			
 			case e:Throwable=>{
 				println("Exceção cliente finalizado")
 				sock.close()
@@ -50,25 +52,60 @@ trait SocketActor extends Actor{
 		}
 
 	}
-	def command(command:String){
-		println("Comando recebido "+command)
+	/**
+	 * Parseia um comando
+	 */
+	def parseCommand(cmd:String){
+		println("Recebido "+cmd)
+		var isCmd=true
+		var currentCmd:Option[String]=None
+		var cmdList:List[(String,Option[String])]=Nil
+		for(i<-cmd.split(' ')){
+			if(i.startsWith("-") !=isCmd ){
+				throw new IllegalArgumentException("ERRO:Por favor envie comandos no formaro -Comando Argumento -COmando2 Argumento .. -ComandoN argumento")
+			}
+			if(isCmd){
+				currentCmd=i.substring(1)
+			}
+			else{
+				cmdList=(currentCmd,Some(i))::cmdList
+				currentCmd=None
+			}
+			isCmd=(!isCmd)
+		}
+		if(!currentCmd.isEmpty){
+			currentCmd=None
+			cmdList=(currentCmd,None)::cmdList
+		}
+		println(cmdList)
+	}
+	def executeCommand(cmdList:List[(String,Option[String])]){
+
 	}
 	/**
+	 * Lida com um input
+	 */
+	def handleInput(input:String){
+		input match{
+			case str if str.startsWith("-")=>  parseCommand(str)
+			case str=> display(str)
+		}
+	}
+	
+	/**run
 	 * Mostra algum resultado para o usuario
-	 * @type {[type]}
 	 */
 	def display(str:String){
 		println("OUT:  "+str)
 	}
 	/**
 	 * Envia uma mensagem atraves do socket
-	 * @type String mensagem
 	 */
 	def sendMessage(mess:String){
 		//this.oout.writeObject((Message.MESS,mess))
 		out.println(mess)
 	}
-	object Message extends Enumeration{
-		val COMM,MESS,COMM_SETUP= Value
-	}
+
+
 }
+

@@ -1,0 +1,1 @@
+start cmd /k scala -cp ../release TabuClient
