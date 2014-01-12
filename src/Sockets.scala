@@ -7,7 +7,18 @@ import scala.io._
 import java.util.Date;
 
 abstract class CommandActor extends Actor{
-
+	def executeCommand(cmdList:List[(String,Option[String])])
+	def help(){
+		println("HELP RECEBIDO")
+	}
+	def act{
+		loop{
+			react{
+				case (h:String,_)::_ if h=='h' => help
+				case cmdList:List[(String,Option[String])] => executeCommand(cmdList)
+			}
+		}
+	}
 }
 object CommandActor{
 	def parseCommand(cmd:String):List[(String,Option[String])]={
@@ -83,16 +94,12 @@ trait SocketActor extends Actor{
 		}
 
 	}
-
-	def executeCommand(cmdList:List[(String,Option[String])]){
-
-	}
 	/**
 	 * Lida com um input
 	 */
 	def handleInput(input:String){
 		input match{
-			case str if str.startsWith("-")=>  CommandActor.parseCommand(str)
+			case str if str.startsWith("-")=> handler ! CommandActor.parseCommand(str)
 			case str=> display(str)
 		}
 	}

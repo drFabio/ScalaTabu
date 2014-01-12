@@ -7,16 +7,11 @@ import scala.actors.Actor._
 * Holds the several players 
 */
 class GameHall(val size:Int) extends CommandActor{
-
-	def act(){
-		loop{
-			react{
-				case h::t =>{
-					println(h)
-				}
-			}
-		}
-
+	override def help(){
+		println("HELP OVERRADADO HUEHUHEUHEUHEUH")
+	}
+	def executeCommand(cmdList:List[(String,Option[String])]){
+		println("NO execute command do gameHall")
 	}
 	/**
 	 * Jogos que serão criados
