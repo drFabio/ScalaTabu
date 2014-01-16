@@ -7,8 +7,8 @@ import scala.actors.Actor._
 * Holds the several players 
 */
 class GameHall(val size:Int) extends CommandActor{
-	override def help(){
-		println("HELP OVERRADADO HUEHUHEUHEUHEUH")
+	def help(){
+		sender ! ("Digite -l para listar \n -c [Nome do jogo] para criar um jogo ou com os parametros opcionais \n -c [Nome do jogo] -j [Numero de jogadores] -p [Pontos para vencer]")
 	}
 	def executeCommand(cmdList:List[(String,Option[String])]){
 		println("NO execute command do gameHall")

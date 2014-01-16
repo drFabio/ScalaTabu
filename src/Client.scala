@@ -7,15 +7,19 @@ import game.io._
 * Ator que cuida da obtenção de comandos vindo do socket
 */
 class PlayerActor(protected val sock:Socket) extends{
-	protected val handler=playerCommand
 	
 }
   with SocketActor{
+	handler=new PlayerCommand
+	handler.start
  	def executeCommand(cmdList:List[(String,Option[String])]){
 
 	}
  }
- object playerCommand extends CommandActor{
+ class PlayerCommand extends CommandActor{
+ 	def help(){
+ 		
+ 	}
 	def executeCommand(cmdList:List[(String,Option[String])]){
 		
 	}

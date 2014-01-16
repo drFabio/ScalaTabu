@@ -9,10 +9,10 @@ import game.basics._
 * Ator que cuida da obtenção de comandos vindo do socket
 */
 class receiverActor(gh:GameHall,protected val sock:Socket,protected val connId:Int) extends {
-	protected val handler=gh
 	//Early initializer
 }
  with SocketActor{
+	handler=gh
  	def sendHello(){
 		this.sendMessage("Bem vindo! voce esta conectado , digite -h para ajuda")
 	}
@@ -24,6 +24,7 @@ object TabuServer{
 		 * @todo pegar argumento para numero de pessoas
 		 */
 		val gh:GameHall=new GameHall
+		gh.start
 		try{
 			val port=1337
 			println("Iniciando servidor na porta "+port)
@@ -33,7 +34,7 @@ object TabuServer{
 			while (true) {
 			    val s = server.accept()
 			    println("Recebido conexão")
-			    var a =new receiverActor(gh,s,connId)
+			    val a =new receiverActor(gh,s,connId)
 			    a.start()
 			    connId+=1
 			}
