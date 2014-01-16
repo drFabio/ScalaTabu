@@ -105,7 +105,13 @@ trait SocketActor extends Actor{
 			case str:String if str.startsWith("-")=>{
 				var list= CommandActor.parseCommand(str)
 				println("RECEBI "+list)
-				handler ! list
+				val sActor=this
+				actor{
+					sActor.handler ! list
+					self.react{
+						case s:String=>sendMessage(s)
+					}
+				}
 
 			}
 			case str:String=> display(str)
