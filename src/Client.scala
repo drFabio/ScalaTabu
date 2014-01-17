@@ -6,28 +6,38 @@ import game.io._
 /**
 * Ator que cuida da obtenção de comandos vindo do socket
 */
-class PlayerActor(protected val sock:Socket) extends{
+class PlayerActor(protected val sock:Socket,val name:String) extends{
 	
 }
   with SocketActor{
-	handler=new PlayerCommand
+	handler=new PlayerCommand(name)
 	handler.start
- 	def executeCommand(cmdList:List[(String,Option[String])]){
 
-	}
  }
- class PlayerCommand extends CommandActor{
+ class PlayerCommand(val name:String) extends CommandActor{
  	def help(){
  		
  	}
 	def executeCommand(cmdList:List[(String,Option[String])]){
-		
+		cmdList match {
+			case (p,_)::_ if (p=="getName")=>{
+				sender ! "!-iAm "+name
+			}
+
+			case (p,index)::_ if (p=="cg")=>{
+				println("Jogo criado com o n "+index.get)
+				/**
+				 * @todo e agora?
+				 */
+			}
+		}
 	}
  }
 object TabuClient{
 	def main(args:Array[String]){
 		try{
-			println("Inicializado um cliente")
+			println("Por favor digite seu nome")
+			val name=readLine()
 			/**
 			 * @todo pegar do argumento
 			 */
@@ -35,7 +45,7 @@ object TabuClient{
 			val s = new Socket(InetAddress.getByName("localhost"), port)
 			
 			//Inicializa o ator que cuida dos sockets
-			val a=new PlayerActor(s)
+			val a=new PlayerActor(s,name)
 			a.start()
 			//Le indefinidamente do input
 			for (line <- io.Source.stdin.getLines){

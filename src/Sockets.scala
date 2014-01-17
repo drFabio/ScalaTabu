@@ -14,7 +14,6 @@ abstract class CommandActor extends Actor{
 			react{
 				case (h:String,_)::_ if h=="h" => help
 				case cmdList:List[(String,Option[String])] => executeCommand(cmdList)
-				case _ =>println("SEI LÁ O QUE RECEBI")
 			}
 		}
 	}
@@ -24,7 +23,9 @@ object CommandActor{
 		var isCmd=true
 		var currentCmd:Option[String]=None
 		var cmdList:List[(String,Option[String])]=Nil
+		println("RECEBIDO CMD "+cmd)
 		for(i<-cmd.split(' ')){
+			println("I E "+i)
 			if(i.startsWith("-") !=isCmd ){
 				throw new IllegalArgumentException("ERRO:Por favor envie comandos no formaro -Comando Argumento -COmando2 Argumento .. -ComandoN argumento")
 			}
@@ -99,23 +100,22 @@ trait SocketActor extends Actor{
 	def handleInput(input:String){
 		input match{
 			case str:String if str.startsWith("!")=>{
-				println("AQUI!!!!!!")
+				
 				sendMessage(str.substring(1))
 			}
 			case str:String if str.startsWith("-")=>{
-				var list= CommandActor.parseCommand(str)
-				println("RECEBI "+list)
-				val sActor=this
 				actor{
-					sActor.handler ! list
+					handler !  CommandActor.parseCommand(str)
 					self.react{
-						case s:String=>sendMessage(s)
+						case s:String=>handleInput(s)
+						case  ca:CommandActor=>{
+							handler=ca
+						}
 					}
 				}
 
 			}
 			case str:String=> display(str)
-			case _ => println("Não sei o que recebi aquii")
 		}
 	}
 	

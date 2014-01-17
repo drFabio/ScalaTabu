@@ -3,41 +3,49 @@ package game.basics
 *@fixme remover listbuffer e resolver só com list?
 */
 import scala.collection.mutable.ListBuffer
-class Game(val index:Int,val name:String,val numTeams:Int,val maxScore:Int){
-	protected val teamList=Array.fill(numTeams){new Team()}
-	protected var joinCounter=0
-	protected var roundCounter=0
-	protected var currentTeam:Int=0
+class Game(val index:Int,val name:String,val numTeams:Int,val maxScore:Int) extends game.io.CommandActor{
+	def help(){
+		sender ! ("!Help do game")
+	}
+	def executeCommand(cmdList:List[(String,Option[String])]){
+	}
+	protected val _teamList=Array.fill(numTeams){new Team()}
+	protected var _joinCounter=0
+	protected var _roundCounter=0
+	protected var _currentTeam:Int=0
+	//protected var _creator:Player=null
 	/**
 	* Jogador entra 
 	*/
 	def join(p:Player){
-		p.teamId=Some(this.joinCounter)
-		this.teamList(this.joinCounter)+p
-		this.joinCounter=(this.joinCounter+1)%this.teamList.length
+		p.teamId=Some(this._joinCounter)
+		this._teamList(this._joinCounter)+p
+		this._joinCounter=(this._joinCounter+1)%this._teamList.length
 	}
+
+
 	/**
 	* Jogador sai
 	*/
 	def leave(p:Player){
-		this.teamList(p.teamId.get)-p
+		this._teamList(p.teamId.get)-p
 	}
 	/**
 	 * Inicia a proxima rodada
 	 */
 	protected def _nextRound(){
-		this.currentTeam=this.roundCounter
-		val p:Player=teamList(this.currentTeam).getNextPlayer()
+		this._currentTeam=this._roundCounter
+		val p:Player=_teamList(this._currentTeam).getNextPlayer()
 		//Pega o próximo jogador a falar a palavra
-		this.roundCounter=(this.roundCounter+1)%this.numTeams
+		this._roundCounter=(this._roundCounter+1)%this.numTeams
 
 	}
 	/**
 	 * Achou uma palavra com sucesso definitivamente
 	 */
 	def foundWord(){
-		if(teamList(this.currentTeam).score()==this.maxScore){
-			this._endGame(this.currentTeam)
+		if(_teamList(this._currentTeam).score()==this.maxScore){
+			this._endGame(this._currentTeam)
 		}
 		else{
 			this._nextRound
@@ -56,7 +64,7 @@ class Game(val index:Int,val name:String,val numTeams:Int,val maxScore:Int){
 	 */
 	def tabu(){
 		for(i<-0 until this.numTeams){
-			if(this.teamList(i).score()==this.maxScore){
+			if(this._teamList(i).score()==this.maxScore){
 				this._endGame(i)
 			}
 			else{
@@ -65,6 +73,9 @@ class Game(val index:Int,val name:String,val numTeams:Int,val maxScore:Int){
 			}
 
 		}
+	}
+	override def toString()={
+		index+" - "+name
 	}
 
 	class Team{
@@ -92,7 +103,6 @@ class Game(val index:Int,val name:String,val numTeams:Int,val maxScore:Int){
 			return this.players(pos)
 		}
 	}
-
 	
 }	
 

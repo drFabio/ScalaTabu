@@ -15,6 +15,7 @@ class receiverActor(gh:GameHall,protected val sock:Socket,protected val connId:I
 	handler=gh
  	def sendHello(){
 		this.sendMessage("Bem vindo! voce esta conectado , digite -h para ajuda")
+		this.sendMessage("-getName")
 	}
 	this.sendHello()
  }

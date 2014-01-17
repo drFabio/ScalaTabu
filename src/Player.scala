@@ -1,4 +1,4 @@
 package game.basics
-class Player(val id:Int,val name:String){
+class Player(val actor:game.io.SocketActor,val name:String){
 	var teamId:Option[Int]=None
 }
