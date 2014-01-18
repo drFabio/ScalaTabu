@@ -45,6 +45,14 @@ object CommandActor{
 		return cmdList
 	}
 }
+object StreamFactory{
+	def makeIn(sock:Socket)={
+		new ObjectInputStream(sock.getInputStream())
+	}
+	def makeOut(sock:Socket)={
+		new ObjectOutputStream (sock.getOutputStream())
+	}
+}
 /**
  * Lida com o recebimento e envio de mensagens de texto, parseando comandos e mensagens
  */
@@ -55,24 +63,30 @@ trait SocketActor extends Actor{
 	protected def sock:Socket
 	protected var handler:CommandActor=_
 
-	// protected val oin:ObjectInputStream=new ObjectInputStream(this.sock.getInputStream())
-	// protected val oout:ObjectOutputStream = new ObjectOutputStream (this.sock.getOutputStream())
-	protected val in:BufferedReader=new BufferedReader(new InputStreamReader(this.sock.getInputStream()))
-	protected val out:PrintWriter= new PrintWriter(this.sock.getOutputStream(), true)
+	protected lazy val oin:ObjectInputStream=StreamFactory.makeIn(sock) //new ObjectInputStream(this.sock.getInputStream())
+	protected lazy val oout:ObjectOutputStream =StreamFactory.makeOut(sock) // new ObjectOutputStream (this.sock.getOutputStream())
+	// protected val in:BufferedReader=new BufferedReader(new InputStreamReader(this.sock.getInputStream()))
+	// protected val out:PrintWriter= new PrintWriter(this.sock.getOutputStream(), true)
 	/**
 	 * Ação principal desse socket actor, simplesmente le inputs eternamente e lida com eles
 	 */
 	def act(){
 		try{
+			
 			var ok=true
 			while(ok){
-				var input=in.readLine()
+				// var input=in.readLine
+				var input=oin.readObject
 				if(input==null){ //fim da stream ou erro provavelmente
 					ok=false
 				}
 				else{
 					try{
-						handleInput(input)
+						input match{
+							case s:String=>handleInput(s)
+					 	}
+					 	// handleInput(input)
+						
 					}
 					catch{
 						case e:IllegalArgumentException=>{
@@ -129,7 +143,7 @@ trait SocketActor extends Actor{
 	 * Envia uma mensagem atraves do socket
 	 */
 	def sendMessage(mess:String){
-		//this.oout.writeObject((Message.MESS,mess))
-		out.println(mess)
+		oout.writeObject(mess)
+		// out.println(mess)
 	}
 }
