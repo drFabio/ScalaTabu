@@ -1,2 +1,2 @@
-scalac  -d ../release Sockets.scala Client.scala
+scalac  -d ../release Command.scala Sockets.scala Client.scala
 PAUSE

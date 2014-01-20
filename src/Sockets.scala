@@ -4,7 +4,7 @@ import scala.actors.Actor._
 import java.net._
 import java.io._
 import scala.io._
-import java.util.Date;
+import game.io.commands._
 
 abstract class CommandActor extends Actor{
 	def executeCommand(cmdList:List[(String,Option[String])])
@@ -19,40 +19,21 @@ abstract class CommandActor extends Actor{
 	}
 }
 object CommandActor{
+	val cliRegex=new scala.util.matching.Regex("""-(\w+)(\s+(\"([\w ]+)\"|\w+))?""","cmd","dumb","value","quotedValue")
+
 	def parseCommand(cmd:String):List[(String,Option[String])]={
-		var isCmd=true
-		var currentCmd:Option[String]=None
-		var cmdList:List[(String,Option[String])]=Nil
-		println("RECEBIDO CMD "+cmd)
-		for(i<-cmd.split(' ')){
-			println("I E "+i)
-			if(i.startsWith("-") !=isCmd ){
-				throw new IllegalArgumentException("ERRO:Por favor envie comandos no formaro -Comando Argumento -COmando2 Argumento .. -ComandoN argumento")
-			}
-			if(isCmd){
-				currentCmd=Some(i.substring(1))
-			}
-			else{
-				cmdList=(currentCmd.get,Some(i))::cmdList
-				currentCmd=None
-			}
-			isCmd=(!isCmd)
+		var cmdList:Iterator[(String,Option[String])]=for(m<-cliRegex findAllMatchIn(cmd)) yield {
+			val value=if ((m group "quotedValue" )!=null){m group "quotedValue"} else{ m group "value"}
+			(m group "cmd",if(value==null){None} else {Some(value)})
 		}
-		if(!currentCmd.isEmpty){
-			cmdList=(currentCmd.get,None)::cmdList
-			currentCmd=None
+		if(cmdList.isEmpty){
+			throw new IllegalArgumentException("ERRO:Por favor envie comandos no formaro -Comando Argumento -COmando2 Argumento .. -ComandoN argumento")
+			
 		}
-		return cmdList
+		cmdList.toList
 	}
 }
-object StreamFactory{
-	def makeIn(sock:Socket)={
-		new ObjectInputStream(sock.getInputStream())
-	}
-	def makeOut(sock:Socket)={
-		new ObjectOutputStream (sock.getOutputStream())
-	}
-}
+
 /**
  * Lida com o recebimento e envio de mensagens de texto, parseando comandos e mensagens
  */
@@ -63,8 +44,8 @@ trait SocketActor extends Actor{
 	protected def sock:Socket
 	protected var handler:CommandActor=_
 
-	protected lazy val oin:ObjectInputStream=StreamFactory.makeIn(sock) //new ObjectInputStream(this.sock.getInputStream())
-	protected lazy val oout:ObjectOutputStream =StreamFactory.makeOut(sock) // new ObjectOutputStream (this.sock.getOutputStream())
+	protected lazy val oin:ObjectInputStream=new ObjectInputStream(this.sock.getInputStream())
+	protected lazy val oout:ObjectOutputStream = new ObjectOutputStream (this.sock.getOutputStream())
 	// protected val in:BufferedReader=new BufferedReader(new InputStreamReader(this.sock.getInputStream()))
 	// protected val out:PrintWriter= new PrintWriter(this.sock.getOutputStream(), true)
 	/**
@@ -84,6 +65,7 @@ trait SocketActor extends Actor{
 					try{
 						input match{
 							case s:String=>handleInput(s)
+							case m:Message=>handleInput(m.toString())
 					 	}
 					 	// handleInput(input)
 						
@@ -118,6 +100,7 @@ trait SocketActor extends Actor{
 				sendMessage(str.substring(1))
 			}
 			case str:String if str.startsWith("-")=>{
+				println("RECEBI O COMANDO "+str)
 				actor{
 					handler !  CommandActor.parseCommand(str)
 					self.react{
@@ -145,5 +128,8 @@ trait SocketActor extends Actor{
 	def sendMessage(mess:String){
 		oout.writeObject(mess)
 		// out.println(mess)
+	}
+	def sendMessage(mess:AbstractMessage){
+		oout.writeObject(mess)
 	}
 }
