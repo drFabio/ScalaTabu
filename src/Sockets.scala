@@ -5,20 +5,51 @@ import java.net._
 import java.io._
 import scala.io._
 import game.io.commands._
-
+/**
+ * Classe que lida com recebimento de commandos
+ */
 abstract class CommandActor extends Actor{
-	def executeCommand(cmdList:List[(String,Option[String])])
+	/**
+	 * Executa um comando recebido
+	 * @type {[type]}
+	 */
+	def executeCommand(cmd:AbstractCommand)
 	def help()
 	def act{
 		loop{
 			react{
-				case (h:String,_)::_ if h=="h" => help
-				case cmdList:List[(String,Option[String])] => executeCommand(cmdList)
+				case h:Help=>help()
+				case cmd:AbstractCommand => executeCommand(cmd)
 			}
 		}
 	}
+
 }
-object CommandActor{
+ /**
+  * Lida com o recebimento de comandos pela interface da command line
+  */
+abstract class CLICommandActor extends CommandActor{
+	/**
+	 * Intepreta uma mensagem no formato string
+	 * @type {[type]}
+	 */
+	def handleMessage(mess:String):AbstractCommand={
+		if(mess.startsWith("-")){
+			this.interpretCommand(CLICommandActor.parseCommand(mess))
+		}
+		else{
+			new Message(mess)
+		}
+	}
+	/**
+	 * Interpreta um comando vindo do parser
+	 * @type {[type]}
+	 */
+	def interpretCommand(cmd:List[(String,Option[String])]):AbstractCommand
+
+}
+
+object CLICommandActor{
 	val cliRegex=new scala.util.matching.Regex("""-(\w+)(\s+(\"([\w ]+)\"|\w+))?""","cmd","dumb","value","quotedValue")
 
 	def parseCommand(cmd:String):List[(String,Option[String])]={
@@ -64,15 +95,14 @@ trait SocketActor extends Actor{
 				else{
 					try{
 						input match{
-							case s:String=>handleInput(s)
-							case m:Message=>handleInput(m.toString())
+							case m:AbstractCommand=>handleInput(m)
 					 	}
 					 	// handleInput(input)
 						
 					}
 					catch{
 						case e:IllegalArgumentException=>{
-							sendMessage(e.getMessage)
+							sendMessage(new ErrorMessage(e))
 						}
 						
 					}
@@ -93,43 +123,39 @@ trait SocketActor extends Actor{
 	 * @todo mudar para objetos depois
 	 * Lida com um input
 	 */
-	def handleInput(input:String){
+	def handleInput(input:AbstractCommand){
 		input match{
-			case str:String if str.startsWith("!")=>{
-				
-				sendMessage(str.substring(1))
+			case rp:Reply=>{
+				println("Deveria enviar um reply")
+				sendMessage(rp.cmd)
 			}
-			case str:String if str.startsWith("-")=>{
-				println("RECEBI O COMANDO "+str)
+			case mess:Message=>{
+				println("RECEBI MENSAGEM")
+				display(mess)
+			}
+			case cmd:Command=>{
+				println("RECEBI COMANDO !")
 				actor{
-					handler !  CommandActor.parseCommand(str)
+					handler ! cmd
 					self.react{
-						case s:String=>handleInput(s)
-						case  ca:CommandActor=>{
+						case am:AbstractCommand=>handleInput(am)
+						case ca:CommandActor=>{
 							handler=ca
 						}
 					}
 				}
-
 			}
-			case str:String=> display(str)
 		}
 	}
 	
 	/**run
 	 * Mostra algum resultado para o usuario
 	 */
-	def display(str:String){
-		println("OUT:  "+str)
+	def display(mess:Message){
+		println("OUT:  "+mess)
 	}
-	/**
-	 * Envia uma mensagem atraves do socket
-	 */
-	def sendMessage(mess:String){
-		oout.writeObject(mess)
-		// out.println(mess)
-	}
-	def sendMessage(mess:AbstractMessage){
+	def sendMessage(mess:AbstractCommand){
 		oout.writeObject(mess)
 	}
+	
 }

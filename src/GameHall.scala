@@ -2,6 +2,7 @@ package game.basics
 import game.io.CommandActor
 import scala.actors.Actor
 import scala.actors.Actor._
+import game.io.commands._
 
 /**
 * Holds the several players 
@@ -10,30 +11,15 @@ class GameHall(val size:Int) extends CommandActor{
 	def help(){
 		sender ! ("!Digite -l para listar \n -j [Numero do jogo] para entrar num jogo \n -c [Nome do jogo] (-n [Numero de times] (-p [Pontos para vencer]))")
 	}
-	def executeCommand(cmdList:List[(String,Option[String])]){
-		cmdList match {
-			case (p,_)::_ if p=="l" => sender ! "!"+(list getOrElse("Não existem jogos, crie um novo"))
-			case (p,name)::_ if p=="iAm" => sender ! println("RECEBI O NOME DO JAGUNCO E E "+name)
+	def executeCommand(cmd:AbstractCommand){
+		cmd match {
+			case c:gameHall.List=> sender ! "!"+(list getOrElse(new Message("Não existem jogos, crie um novo")))
+			case c:gameHall.IAm => sender ! println("RECEBI O NOME DO JAGUNCO E E "+c.name)
 
-			case (p,name)::args if p=="c" => {
+			case c:gameHall.CreateGame => {
 
-				val g:Option[Game]=if(args==Nil){
-					createGame(name.get)
-				}
-				else{
-					var numTeams=2
-					var maxScore=10
-					for(t<-args){
-						if(t._1=='n'){
-							numTeams=t._2.get.toInt
-						}
-						else if(t._1=='p'){
-							maxScore=t._2.get.toInt
-						}
-					}
-					createGame(name.get,numTeams,maxScore)
-				}
-				if(g.isEmpty){
+				val g:Option[Game]=createGame(c.gameName,c.numTeams,c.maxScore)
+				/*if(g.isEmpty){
 					sender ! "!Não foi possível criar seu jogo, tente novamente mais tarde"
 				}
 				else{
@@ -41,7 +27,7 @@ class GameHall(val size:Int) extends CommandActor{
 					ga.start
 					sender ! ga
 					sender ! "!-cg "+ga.index
-				}
+				}*/
 			}
 
 		}

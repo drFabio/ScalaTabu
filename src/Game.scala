@@ -1,13 +1,15 @@
 package game.basics
+import game.io.commands._
+
+
 /**
 *@fixme remover listbuffer e resolver só com list?
 */
 import scala.collection.mutable.ListBuffer
-class Game(val index:Int,val name:String,val numTeams:Int,val maxScore:Int) extends game.io.CommandActor{
+class Game(val index:Int,val name:String,val numTeams:Int,val maxScore:Int) extends _root_.game.io.CommandActor{
 	def help(){
-		sender ! ("!Help do game")
 	}
-	def executeCommand(cmdList:List[(String,Option[String])]){
+	def executeCommand(cmd:AbstractCommand){
 	}
 	protected val _teamList=Array.fill(numTeams){new Team()}
 	protected var _joinCounter=0

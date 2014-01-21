@@ -8,42 +8,39 @@ import game.io.commands._
 * Ator que cuida da obtenção de comandos vindo do socket
 */
 class PlayerActor(protected val sock:Socket,val name:String) extends{
-	
+
 }
   with SocketActor{
 	handler=new PlayerCommand(name)
 	handler.start
+	def sendMessage(str:String){
+		this.sendMessage(handler.asInstanceOf[CLICommandActor].handleMessage(str))
+	}
 
  }
- class PlayerCommand(val name:String) extends CommandActor{
+ class PlayerCommand(val name:String) extends CLICommandActor{
+ 	def interpretCommand(cmd:List[(String,Option[String])]):AbstractCommand={
+ 		cmd match{
+ 			case (h:String,_)::_ if (h=="h")=>new Help()
+ 		}
+ 	}
  	def help(){
  		
  	}
-	def executeCommand(cmdList:List[(String,Option[String])]){
-		cmdList match {
-			case (p,_)::_ if (p=="getName")=>{
-				sender ! "!-iAm "+name
+	def executeCommand(cmd:AbstractCommand){
+		cmd match{
+			case wh:gameHall.WhoAreYou=>{
+				sender ! new Reply(new gameHall.IAm(name))
 			}
-
-			case (p,index)::_ if (p=="cg")=>{
-				println("Jogo criado com o n "+index.get)
-				/**
-				 * @todo e agora?
-				 */
+			case _=>{
+				println("RECEBI OUTRA COISA!")
 			}
 		}
+		
 	}
  }
 object TabuClient{
 
-	def ParseCommand(input:String):AbstractMessage={
-		if(input.startsWith("-")){
-			new Message("COmmand")
-		}
-		else{
-			new Message(input)
-		}
-	}
 	def main(args:Array[String]){
 		try{
 			println("Por favor digite seu nome")
@@ -59,7 +56,7 @@ object TabuClient{
 			a.start()
 			//Le indefinidamente do input
 			for (line <- io.Source.stdin.getLines if line!=null){
-				a.sendMessage(ParseCommand(line))
+				a.sendMessage(line)
 			}
 			s.close()
 		}
