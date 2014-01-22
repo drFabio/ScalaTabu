@@ -6,7 +6,7 @@ import game.io.commands._
 *@fixme remover listbuffer e resolver só com list?
 */
 import scala.collection.mutable.ListBuffer
-class Game(val index:Int,val name:String,val numTeams:Int,val maxScore:Int) extends _root_.game.io.CommandActor{
+class Game(val creator:Player,val index:Int,val name:String,val numTeams:Int,val maxScore:Int) extends _root_.game.io.CommandActor{
 	def help(){
 	}
 	def executeCommand(cmd:AbstractCommand){
@@ -15,7 +15,7 @@ class Game(val index:Int,val name:String,val numTeams:Int,val maxScore:Int) exte
 	protected var _joinCounter=0
 	protected var _roundCounter=0
 	protected var _currentTeam:Int=0
-	//protected var _creator:Player=null
+	//this.join(this.creator)
 	/**
 	* Jogador entra 
 	*/

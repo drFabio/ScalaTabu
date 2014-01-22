@@ -12,13 +12,30 @@ class receiverActor(gh:GameHall,protected val sock:Socket,protected val connId:I
 	//Early initializer
 }
  with SocketActor{
-	handler=gh
- 	def sendHello(){
-		this.sendMessage(new commands.Message("Bem vindo! voce esta conectado , digite -h para ajuda"))
-		this.sendMessage(new commands.gameHall.WhoAreYou)
+ 	protected var _name:String=null
+	_currentRole=gh
+	/**
+	*Envia a mensagem de boas vindas e pergunta o nome
+	*/
+ 	def sendHello(name:String){
+		
+		this.sendMessage(new commands.Message("Bem vindo "+name+"! voce esta conectado , digite -h para ajuda"))
 	}
-	this.sendHello()
+	override def handleInput(input:commands.AbstractCommand)={
+		input match {
+			case c:commands.setup.IAm=>{
+				sendHello(c.name)
+			}
+			case _=>{
+				super.handleInput(input)
+			}
+		}
+	}
+	this.sendMessage(new commands.setup.WhoAreYou)
  }
+/**
+ * Servidor de tabu criando um receiverActor para cada jogador
+ */
 object TabuServer{
 	def main(args:Array[String])={
 		/**

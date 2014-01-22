@@ -11,10 +11,10 @@ class PlayerActor(protected val sock:Socket,val name:String) extends{
 
 }
   with SocketActor{
-	handler=new PlayerCommand(name)
-	handler.start
+	_currentRole=new PlayerCommand(name)
+	_currentRole.start
 	def sendMessage(str:String){
-		this.sendMessage(handler.asInstanceOf[CLICommandActor].handleMessage(str))
+		this.sendMessage(_currentRole.asInstanceOf[CLICommandActor].handleMessage(str))
 	}
 
  }
@@ -23,7 +23,7 @@ class PlayerActor(protected val sock:Socket,val name:String) extends{
  		cmd match{
  				case (h:String,_)::_ if (h=="h")=>new Help()
  				case (l:String,_)::_ if (l=="l")=>new gameHall.List()
- 				case (c:String,_)::_ if (c=="c")=> gameHall.CreateGame.factory(cmd)
+ 				case (c:String,_)::_ if (c=="c")=> gameHall.CreateGame.factory(("cn",Some(name))::cmd)
 
  		}
  	}
@@ -32,8 +32,8 @@ class PlayerActor(protected val sock:Socket,val name:String) extends{
  	}
 	def executeCommand(cmd:AbstractCommand){
 		cmd match{
-			case wh:gameHall.WhoAreYou=>{
-				sender ! new Reply(new gameHall.IAm(name))
+			case wh:setup.WhoAreYou=>{
+				sender ! new Reply(new setup.IAm(name))
 			}
 			case _=>{
 				println("RECEBI OUTRA COISA!")

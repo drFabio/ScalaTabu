@@ -1,4 +1,5 @@
 package game.basics
-class Player(val actor:game.io.SocketActor,val name:String){
+import scala.actors.Actor
+class Player(val actor:Actor,val name:String){
 	var teamId:Option[Int]=None
 }

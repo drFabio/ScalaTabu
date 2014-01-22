@@ -16,6 +16,7 @@ package game.io.commands{
 	class Command() extends AbstractCommand{
 
 	}
+
 	class Help() extends Command{
 		
 	}
@@ -25,19 +26,22 @@ package game.io.commands{
 	class Reply(val cmd:AbstractCommand) extends AbstractCommand{
 
 	}
-	package gameHall{
-		class List extends Command{
 
-		}
+	package setup{
 		class WhoAreYou extends Command{
 			
 		}
 		class IAm(val name:String) extends Command{
 			
 		}
-		class CreateGame(val gameName:String,val numTeams:Int,val maxScore:Int) extends Command{
-			def this( gameName:String, numTeams:Int)=this(gameName,numTeams,CreateGame.defaultScore)
-			def this( gameName:String)=this(gameName,CreateGame.defaultTeam,CreateGame.defaultScore)
+	}
+	package gameHall{
+		class List extends Command{
+
+		}
+
+		class CreateGame(val gameName:String,val numTeams:Int,val maxScore:Int,val creatorName:String) extends Command{
+		
 		}
 		object CreateGame{
 			val defaultTeam:Int=2
@@ -47,11 +51,13 @@ package game.io.commands{
 				var score:Int=defaultScore
 				var teams:Int=defaultTeam
 				var name:String=null
+				var creatorName:String=null
 				for(c<-cmd){
 					c._1 match{
 						case p:String if p=="c"=>name=c._2.get
 						case p:String if p=="n"=>teams=c._2.get.toInt
 						case p:String if p=="p"=>score=c._2.get.toInt
+						case p:String if p=="cn"=>creatorName=c._2.get
 						case _=>{}
 					}
 				}
@@ -62,7 +68,7 @@ package game.io.commands{
 				if(teams<=2){
 					teams=CreateGame.defaultTeam
 				}
-				return new CreateGame(name,teams,score)
+				return new CreateGame(name,teams,score,creatorName)
 			}
 		}
 		class JoinGame(val gameId:Int) extends Command{
@@ -70,6 +76,37 @@ package game.io.commands{
 		}
 	}
 	package game{
+
+	}
+}
+
+
+package game.io {
+	import scala.actors.Actor
+	import scala.actors.Actor._
+	import java.net._
+	import java.io._
+	import scala.io._
+	import game.io.commands._
+
+	/**
+	 * Classe que lida com recebimento de commandos
+	 */
+	abstract class CommandActor extends Actor{
+		/**
+		 * Executa um comando recebido
+		 * @type {[type]}
+		 */
+		def executeCommand(cmd:AbstractCommand)
+		def help()
+		def act{
+			loop{
+				react{
+					case h:Help=>help()
+					case cmd:AbstractCommand => executeCommand(cmd)
+				}
+			}
+		}
 
 	}
 }
