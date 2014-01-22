@@ -9,25 +9,29 @@ import game.io.commands._
 */
 class GameHall(val size:Int) extends CommandActor{
 	def help(){
-		sender ! ("!Digite -l para listar \n -j [Numero do jogo] para entrar num jogo \n -c [Nome do jogo] (-n [Numero de times] (-p [Pontos para vencer]))")
+		sender ! new Reply(new Message("Digite -l para listar \n -j [Numero do jogo] para entrar num jogo \n -c [Nome do jogo] (-n [Numero de times] (-p [Pontos para vencer]))"))
 	}
 	def executeCommand(cmd:AbstractCommand){
 		cmd match {
-			case c:gameHall.List=> sender ! "!"+(list getOrElse(new Message("Não existem jogos, crie um novo")))
-			case c:gameHall.IAm => sender ! println("RECEBI O NOME DO JAGUNCO E E "+c.name)
+			case c:gameHall.List=>{
+				sender ! new Reply(new Message(list getOrElse("Não existem jogos, crie um novo")))
+			}
+			case c:gameHall.IAm =>{
+				println("Recebi o nome " +c.name)
+			}
 
 			case c:gameHall.CreateGame => {
 
 				val g:Option[Game]=createGame(c.gameName,c.numTeams,c.maxScore)
-				/*if(g.isEmpty){
-					sender ! "!Não foi possível criar seu jogo, tente novamente mais tarde"
+				if(g.isEmpty){
+					sender ! new Reply(new ErrorMessage("Não foi possível criar seu jogo, tente novamente mais tarde"))
 				}
 				else{
-					val ga=g.get
+					/*val ga=g.get
 					ga.start
-					sender ! ga
-					sender ! "!-cg "+ga.index
-				}*/
+					sender ! ga*/
+					sender ! new Reply(new Message("Jogo criado com sucesso!"))
+				}
 			}
 
 		}

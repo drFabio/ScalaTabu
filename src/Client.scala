@@ -21,7 +21,10 @@ class PlayerActor(protected val sock:Socket,val name:String) extends{
  class PlayerCommand(val name:String) extends CLICommandActor{
  	def interpretCommand(cmd:List[(String,Option[String])]):AbstractCommand={
  		cmd match{
- 			case (h:String,_)::_ if (h=="h")=>new Help()
+ 				case (h:String,_)::_ if (h=="h")=>new Help()
+ 				case (l:String,_)::_ if (l=="l")=>new gameHall.List()
+ 				case (c:String,_)::_ if (c=="c")=> gameHall.CreateGame.factory(cmd)
+
  		}
  	}
  	def help(){

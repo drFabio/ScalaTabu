@@ -126,15 +126,12 @@ trait SocketActor extends Actor{
 	def handleInput(input:AbstractCommand){
 		input match{
 			case rp:Reply=>{
-				println("Deveria enviar um reply")
 				sendMessage(rp.cmd)
 			}
 			case mess:Message=>{
-				println("RECEBI MENSAGEM")
 				display(mess)
 			}
 			case cmd:Command=>{
-				println("RECEBI COMANDO !")
 				actor{
 					handler ! cmd
 					self.react{
@@ -152,7 +149,7 @@ trait SocketActor extends Actor{
 	 * Mostra algum resultado para o usuario
 	 */
 	def display(mess:Message){
-		println("OUT:  "+mess)
+		println(mess)
 	}
 	def sendMessage(mess:AbstractCommand){
 		oout.writeObject(mess)
