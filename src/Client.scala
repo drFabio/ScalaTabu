@@ -11,20 +11,20 @@ class PlayerActor(protected val sock:Socket,val name:String) extends{
 
 }
   with SocketActor{
-	_currentRole=new PlayerCommand(name)
+	_currentRole=new GameHallPlayerCommand(name)
 	_currentRole.start
 	def sendMessage(str:String){
 		this.sendMessage(_currentRole.asInstanceOf[CLICommandActor].handleMessage(str))
 	}
 
  }
- class PlayerCommand(val name:String) extends CLICommandActor{
+ class GameHallPlayerCommand(val name:String) extends CLICommandActor{
  	def interpretCommand(cmd:List[(String,Option[String])]):AbstractCommand={
  		cmd match{
- 				case (h:String,_)::_ if (h=="h")=>new Help()
- 				case (l:String,_)::_ if (l=="l")=>new gameHall.List()
- 				case (c:String,_)::_ if (c=="c")=> gameHall.CreateGame.factory(("cn",Some(name))::cmd)
-
+ 				case (h,_)::_ if (h=="h")=>new Help()
+ 				case (l,_)::_ if (l=="l")=>new gameHall.List()
+ 				case (c,_)::_ if (c=="c")=> gameHall.CreateGame.factory(("cn",Some(name))::cmd)
+ 				case (j,gameId:Some[String])::_ if (j=="j")=> new gameHall.JoinGame(gameId.get.toInt,name)
  		}
  	}
  	def help(){

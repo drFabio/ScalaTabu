@@ -15,7 +15,7 @@ class Game(val creator:Player,val index:Int,val name:String,val numTeams:Int,val
 	protected var _joinCounter=0
 	protected var _roundCounter=0
 	protected var _currentTeam:Int=0
-	//this.join(this.creator)
+	this.join(this.creator)
 	/**
 	* Jogador entra 
 	*/

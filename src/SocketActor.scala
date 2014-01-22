@@ -41,6 +41,7 @@ trait SocketActor extends Actor{
 				case ca:CommandActor=>{
 					changeHandler(ca)
 				}
+			
 			}
 		}
 	}

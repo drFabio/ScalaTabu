@@ -43,6 +43,11 @@ package game.io.commands{
 		class CreateGame(val gameName:String,val numTeams:Int,val maxScore:Int,val creatorName:String) extends Command{
 		
 		}
+		class JoinGame(val gameId:Int,val playerName:String) extends Command{
+			override def toString()={
+				"JOIN!!"+gameId+" "+playerName
+			}
+		}
 		object CreateGame{
 			val defaultTeam:Int=2
 			val defaultScore:Int=10
@@ -71,9 +76,7 @@ package game.io.commands{
 				return new CreateGame(name,teams,score,creatorName)
 			}
 		}
-		class JoinGame(val gameId:Int) extends Command{
-
-		}
+	
 	}
 	package game{
 
@@ -103,7 +106,18 @@ package game.io {
 			loop{
 				react{
 					case h:Help=>help()
-					case cmd:AbstractCommand => executeCommand(cmd)
+					case cmd:AbstractCommand =>{
+						try{
+
+							executeCommand(cmd)
+						}
+						catch{
+							case e:IllegalArgumentException=>{
+								sender ! new Reply(new ErrorMessage(e))
+							}
+						}
+
+					} 
 				}
 			}
 		}

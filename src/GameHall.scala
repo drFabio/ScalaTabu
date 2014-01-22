@@ -20,7 +20,7 @@ class GameHall(val size:Int) extends CommandActor{
 
 			case c:gameHall.CreateGame => {
 
-				val g:Option[Game]=createGame(sender.asInstanceOf[Actor],c.gameName,c.numTeams,c.maxScore)
+				val g:Option[Game]=createGame(sender.asInstanceOf[Actor],c.gameName,c.numTeams,c.maxScore,c.creatorName)
 				if(g.isEmpty){
 					sender ! new Reply(new ErrorMessage("Não foi possível criar seu jogo, tente novamente mais tarde"))
 				}
@@ -30,6 +30,18 @@ class GameHall(val size:Int) extends CommandActor{
 					sender ! new Reply(new Message("Jogo criado com sucesso!"))
 					sender ! ga
 				}
+			}
+			case c:gameHall.JoinGame=>{
+				println(c)
+
+				if(_gameBuffer(c.gameId)==null){
+					throw new IllegalArgumentException("O jogo numero "+c.gameId+" não existe mais")
+				}
+				
+				_gameBuffer(c.gameId).join(new Player(sender.asInstanceOf[Actor],c.playerName))
+				sender ! _gameBuffer(c.gameId)
+				sender ! new Reply(new Message("Entrou no jogo "+_gameBuffer(c.gameId).name+" com sucesso!"))
+
 			}
 
 		}
@@ -66,14 +78,14 @@ class GameHall(val size:Int) extends CommandActor{
 	 * Cria um novo jogo com o numero de times e o score desejado
 	 * @type {[type]}
 	 */
-	def createGame(creatorActor:Actor,name:String, numTeams:Int, maxScore:Int):Option[Game]={
+	def createGame(creatorActor:Actor,name:String, numTeams:Int, maxScore:Int,creatorName:String):Option[Game]={
 		if(_gamesOn==this.size){
 			return None
 		}
 		for((x,i) <- _gameBuffer.view.zipWithIndex if x==null){
 			
 			_gamesOn+=1
-			_gameBuffer(i)=new Game(new Player(creatorActor,"JOGADOR@TODO"),i,name,numTeams,maxScore)
+			_gameBuffer(i)=new Game(new Player(creatorActor,creatorName),i,name,numTeams,maxScore)
 			return Some(_gameBuffer(i))
 		
 		}
@@ -81,9 +93,5 @@ class GameHall(val size:Int) extends CommandActor{
 	}
 	
 	
-
-}
-	
-object GameHall{
 
 }
