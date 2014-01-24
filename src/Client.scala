@@ -54,6 +54,9 @@ abstract class PlayerCLICommandActor(val pa:PlayerActor) extends CLICommandActor
  				case (l,_)::_ if (l=="l")=>new gameHall.List()
  				case (c,_)::_ if (c=="c")=> gameHall.CreateGame.factory(cmd,pa.name,pa.getConnId)
  				case (j,gameId:Some[String])::_ if (j=="j")=> new gameHall.JoinGame(gameId.get.toInt,pa.name,pa.getConnId)
+		 		case _=>{
+					throw new IllegalArgumentException("Comando inválido")
+				}
  		}
  	}
 
@@ -110,6 +113,9 @@ class GamePlayerCommand( pa:PlayerActor) extends PlayerCLICommandActor(pa){
 			case (l,_)::_ if (l=="l")=>{
 				new game.List
 			}
+			case _=>{
+				throw new IllegalArgumentException("Comando inválido")
+			}
 
 		}
 
@@ -128,14 +134,14 @@ class GamePlayerCommand( pa:PlayerActor) extends PlayerCLICommandActor(pa){
 				status=Status.guess
 				display(c)
 			}
-			case m:Message=>{
-				display(m)
-			}
 			case c:game.Won=>{
 				display(c)
 			}
 			case c:game.Lost=>{
 				display(c)
+			}
+			case m:Message=>{
+				display(m)
 			}
 		}
 	}

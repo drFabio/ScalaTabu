@@ -177,15 +177,16 @@ class Game(val creator:Player,val index:Int,val name:String,val numTeams:Int,val
 	 * @todo implementar
 	 */
 	def _endGame(winnerIndex:Int){
+		println("FIM DE JOGO")
 		for(i<-0 until this.numTeams){
 			if(i==winnerIndex){
 				for(p<-this._teamList(i).getPlayers){
-					new Reply(game.Won("Seu time venceu parabens!"))
+					p.actor ! new Reply(new game.Won("Seu time venceu parabens!"))
 				}
 			}
 			else{
 				for(p<-this._teamList(i).getPlayers){
-					new Reply(game.Lost("O time "+winnerIndex+" venceu"))
+					p.actor ! new Reply(new game.Lost("O time "+winnerIndex+" venceu"))
 				}
 			}
 		}

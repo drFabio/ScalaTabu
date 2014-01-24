@@ -74,7 +74,7 @@ package game.io.commands{
 
 		object CreateGame{
 			val defaultTeam:Int=2
-			val defaultScore:Int=10
+			val defaultScore:Int=5
 
 			def factory(cmd:_root_.scala.collection.immutable.List[(String,Option[String])],creatorName:String,connId:Int):CreateGame={
 				var score:Int=defaultScore
