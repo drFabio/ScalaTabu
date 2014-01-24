@@ -1,19 +1,35 @@
-import java.util.Date
-
+import java.util.Calendar
+import game.basics.cards.TabuCard
+/**
+ * Comandos enviados via socket e entre os atores
+ */
 package game.io.commands{
 	abstract class AbstractCommand() extends Serializable{
-		val now=new Date()
+		val now=Calendar.getInstance
 
 	}
-	class Message(val content:String) extends AbstractCommand{
+	/**
+	 * Uma mensagem de texto , opcionalmente com rementente
+	 * @type {[type]}
+	 */
+	class Message(val content:String,val senderName:Option[String],val senderConnId:Option[Int]) extends AbstractCommand{
 		override def toString()={
-			"OUT: "+this.content
+
+			val mess=if(senderName.isEmpty){
+				content
+			}
+			else{
+				senderName.get+" :"+content
+			}
+			now.get(Calendar.HOUR_OF_DAY)+":"+now.get(Calendar.MINUTE)+" - "+mess
 		}
+		def this(content:String)=this(content,None,None)
 	}
+
 	class ErrorMessage(content:String) extends Message(content){
 		def this(e:Exception)=this(e.getMessage)
 	}
-	class Command() extends AbstractCommand{
+	trait Command extends AbstractCommand{
 
 	}
 
@@ -26,9 +42,12 @@ package game.io.commands{
 	class Reply(val cmd:AbstractCommand) extends AbstractCommand{
 
 	}
+	trait InternalCommand extends AbstractCommand{
+
+	}
 
 	package setup{
-		class WhoAreYou extends Command{
+		class WhoAreYou(val connId:Int) extends Command{
 			
 		}
 		class IAm(val name:String) extends Command{
@@ -40,29 +59,32 @@ package game.io.commands{
 
 		}
 
-		class CreateGame(val gameName:String,val numTeams:Int,val maxScore:Int,val creatorName:String) extends Command{
+		class CreateGame(val gameName:String,val numTeams:Int,val maxScore:Int,val creatorName:String,val connId:Int) extends Command{
 		
 		}
-		class JoinGame(val gameId:Int,val playerName:String) extends Command{
-			override def toString()={
-				"JOIN!!"+gameId+" "+playerName
-			}
+		class JoinGame(val gameId:Int,val playerName:String,val connId:Int) extends Command{
+			
 		}
+		class CreatedGame(message:String) extends Message(message) with Command{
+
+		}
+		class JoinedGame(message:String) extends Message(message) with Command{
+
+		}
+
 		object CreateGame{
 			val defaultTeam:Int=2
 			val defaultScore:Int=10
 
-			def factory(cmd:_root_.scala.collection.immutable.List[(String,Option[String])]):CreateGame={
+			def factory(cmd:_root_.scala.collection.immutable.List[(String,Option[String])],creatorName:String,connId:Int):CreateGame={
 				var score:Int=defaultScore
 				var teams:Int=defaultTeam
 				var name:String=null
-				var creatorName:String=null
 				for(c<-cmd){
 					c._1 match{
 						case p:String if p=="c"=>name=c._2.get
 						case p:String if p=="n"=>teams=c._2.get.toInt
 						case p:String if p=="p"=>score=c._2.get.toInt
-						case p:String if p=="cn"=>creatorName=c._2.get
 						case _=>{}
 					}
 				}
@@ -73,12 +95,53 @@ package game.io.commands{
 				if(teams<=2){
 					teams=CreateGame.defaultTeam
 				}
-				return new CreateGame(name,teams,score,creatorName)
+				return new CreateGame(name,teams,score,creatorName,connId)
 			}
 		}
 	
 	}
 	package game{
+		/**
+		 * Jogador está pronto
+		 * @type {[type]}
+		 */
+		class IAmReady(val connId:Int) extends Command{
+
+		}
+		/**
+		 * Alguem do seu time acertou!!
+		 */
+		class Correct extends Command{
+
+		}
+		/**
+		 * Pessoa do time falou a palavra tabu
+		 */
+		class Tabu extends Command{
+
+		}
+		/**
+		 * Vez de voce perceber se o cara falou a palavra tabu ou não
+		 */
+		class GuessWord extends Command{
+
+		}
+		/**
+		 * Vez do jogador
+		 * @type {[type]}
+		 */
+		class YourTurn(tc:TabuCard) extends Command{
+
+		}
+		/**
+		 * Time oposto jogando pessoas devem reparar na carta
+		 * 
+		 * @type {[type]}
+		 */
+		class PayAtention(tc:TabuCard) extends Command{
+
+		}
+
 
 	}
 }
@@ -106,9 +169,8 @@ package game.io {
 			loop{
 				react{
 					case h:Help=>help()
-					case cmd:AbstractCommand =>{
+					case cmd:Command =>{
 						try{
-
 							executeCommand(cmd)
 						}
 						catch{
@@ -118,9 +180,19 @@ package game.io {
 						}
 
 					} 
+					case m:Message=>{
+						display(m)
+					}
 				}
 			}
 		}
+		/**run
+		 * Mostra algum resultado para o usuario
+		 */
+		def display(mess:Message){
+			println(mess)
+		}
 
 	}
+
 }

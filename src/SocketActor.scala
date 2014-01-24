@@ -32,12 +32,13 @@ trait SocketActor extends Actor{
 				case rp:Reply=>{
 					sendMessage(rp.cmd)
 				}
-				case mess:Message=>{
-					display(mess)
+				case ic:InternalCommand=>{
+					handleCommand(ic)
 				}
-				case cmd:Command=>{
-					_currentRole ! cmd
+				case ac:AbstractCommand=>{
+					_currentRole ! ac
 				}
+				
 				case ca:CommandActor=>{
 					changeHandler(ca)
 				}
@@ -83,7 +84,6 @@ trait SocketActor extends Actor{
 			
 			case e:Throwable=>{
 				println("Exceção cliente finalizado")
-				e.printStackTrace
 				sock.close()
 			}
 		}
@@ -93,12 +93,7 @@ trait SocketActor extends Actor{
 	def changeHandler(ca:CommandActor){
 		_currentRole=ca
 	}
-	/**run
-	 * Mostra algum resultado para o usuario
-	 */
-	def display(mess:Message){
-		println(mess)
-	}
+
 	def sendMessage(mess:AbstractCommand){
 		oout.writeObject(mess)
 	}
@@ -108,5 +103,12 @@ trait SocketActor extends Actor{
 	 */
 	def handleInput(input:AbstractCommand)={
 		internalHandler ! input
+	}
+	/**
+	 * Lida com um comando vindo do handler
+	 * @type {[type]}
+	 */
+	def handleCommand(input:AbstractCommand)={
+
 	}
 }

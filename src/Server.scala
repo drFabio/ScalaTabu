@@ -8,7 +8,7 @@ import game.basics._
 /**
 * Ator que cuida da obtenção de comandos vindo do socket
 */
-class receiverActor(gh:GameHall,protected val sock:Socket,protected val connId:Int) extends {
+class receiverActor(gh:GameHall,protected val sock:Socket,val connId:Int) extends {
 	//Early initializer
 }
  with SocketActor{
@@ -31,7 +31,7 @@ class receiverActor(gh:GameHall,protected val sock:Socket,protected val connId:I
 			}
 		}
 	}
-	this.sendMessage(new commands.setup.WhoAreYou)
+	this.sendMessage(new commands.setup.WhoAreYou(connId))
  }
 /**
  * Servidor de tabu criando um receiverActor para cada jogador

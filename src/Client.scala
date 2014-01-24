@@ -11,37 +11,94 @@ class PlayerActor(protected val sock:Socket,val name:String) extends{
 
 }
   with SocketActor{
-	_currentRole=new GameHallPlayerCommand(name)
+  	protected var _connId:Int=_
+	_currentRole=new GameHallPlayerCommand(this)
 	_currentRole.start
 	def sendMessage(str:String){
 		this.sendMessage(_currentRole.asInstanceOf[CLICommandActor].handleMessage(str))
 	}
+	override def handleCommand(input:AbstractCommand)={
+		input match{
+			case wh:setup.WhoAreYou=>{
+				_connId=wh.connId
+			}
+		}
+	} 
+	def getConnId()={
+		_connId
+	}
 
  }
- class GameHallPlayerCommand(val name:String) extends CLICommandActor{
+abstract class PlayerCLICommandActor(val pa:PlayerActor) extends CLICommandActor{
+	def createMessage(mess:String):Message={
+		new Message(mess,Some(pa.name),Some(pa.getConnId))
+	}
+ 	def help(){
+ 		
+ 	}
+}
+/**
+ * Papeis do jogador quando ele está no gameHall
+ * @type {[type]}
+ */
+ class GameHallPlayerCommand( pa:PlayerActor) extends PlayerCLICommandActor(pa){
+	
  	def interpretCommand(cmd:List[(String,Option[String])]):AbstractCommand={
  		cmd match{
  				case (h,_)::_ if (h=="h")=>new Help()
  				case (l,_)::_ if (l=="l")=>new gameHall.List()
- 				case (c,_)::_ if (c=="c")=> gameHall.CreateGame.factory(("cn",Some(name))::cmd)
- 				case (j,gameId:Some[String])::_ if (j=="j")=> new gameHall.JoinGame(gameId.get.toInt,name)
+ 				case (c,_)::_ if (c=="c")=> gameHall.CreateGame.factory(cmd,pa.name,pa.getConnId)
+ 				case (j,gameId:Some[String])::_ if (j=="j")=> new gameHall.JoinGame(gameId.get.toInt,pa.name,pa.getConnId)
  		}
  	}
- 	def help(){
- 		
- 	}
+
 	def executeCommand(cmd:AbstractCommand){
 		cmd match{
 			case wh:setup.WhoAreYou=>{
-				sender ! new Reply(new setup.IAm(name))
+				sender ! (new setup.WhoAreYou(wh.connId) with InternalCommand)
+				sender ! new Reply(new setup.IAm(pa.name))
 			}
-			case _=>{
-				println("RECEBI OUTRA COISA!")
+			case c:gameHall.CreatedGame=>{
+				display(c)
+				sender ! new GamePlayerCommand(pa)
+				sender ! new Reply(new game.IAmReady(pa.getConnId))
+			} 
+			case c:gameHall.JoinedGame=>{
+				display(c)
+				sender ! new GamePlayerCommand(pa)
+				sender ! new Reply(new game.IAmReady(pa.getConnId))
+
 			}
+			case m:Message=>{
+				dísplay(m)
+			}
+		
 		}
 		
 	}
  }
+/**
+ * Papeis do jogador quando ele está no jogo em si
+ * @type {[type]}
+ */
+class GamePlayerCommand( pa:PlayerActor) extends PlayerCLICommandActor(pa){
+	def interpretCommand(cmd:List[(String,Option[String])]):AbstractCommand={
+		cmd match{
+			case (h,_)::_ if (h=="h")=>new Help()
+		}
+
+	}
+	def executeCommand(cmd:AbstractCommand){
+		cmd match{
+			case m:Message=>{
+				dísplay(m)
+			}
+		}
+	}
+
+}
+
+
 object TabuClient{
 
 	def main(args:Array[String]){

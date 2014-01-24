@@ -18,9 +18,11 @@ abstract class CLICommandActor extends CommandActor{
 			this.interpretCommand(CLICommandActor.parseCommand(mess))
 		}
 		else{
-			new Message(mess)
+			createMessage(mess)
 		}
 	}
+
+	def createMessage(mess:String):Message
 	/**
 	 * Interpreta um comando vindo do parser
 	 * @type {[type]}
