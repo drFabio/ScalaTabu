@@ -131,6 +131,12 @@ class GamePlayerCommand( pa:PlayerActor) extends PlayerCLICommandActor(pa){
 			case m:Message=>{
 				display(m)
 			}
+			case c:game.Won=>{
+				display(c)
+			}
+			case c:game.Lost=>{
+				display(c)
+			}
 		}
 	}
 	object Status extends Enumeration{

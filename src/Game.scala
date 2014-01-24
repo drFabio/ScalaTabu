@@ -108,15 +108,15 @@ class Game(val creator:Player,val index:Int,val name:String,val numTeams:Int,val
 	 */
 	protected def _sendPlayerMessage(p:Player,currentPlayer:Player){
 		if(p.teamId.get==currentPlayer.teamId.get){
-			p.actor ! new Reply(new game.PayAtention(_currentCard.get,"É a vez do time adversário, fique atento para eles não dizerem as palavras tabu"))
-		}
-		else{
-			if(p==currentPlayer){
+			if(p.connId==currentPlayer.connId){
 				p.actor ! new Reply(new game.YourTurn(_currentCard.get,"É a sua vez ,faça adivinhar a palavra sem dizer ela, as palavras tabu ou derivados"))
 			}
 			else{
 				p.actor !  new Reply(new game.GuessWord("Advinhe a palavra de acordo com as dicas dadas"))
 			}
+		}
+		else{
+			p.actor ! new Reply(new game.PayAtention(_currentCard.get,"É a vez do time adversário, fique atento para eles não dizerem as palavras tabu"))
 		}
 	}
 	protected def _sendPlayerMessage(p:Player){
@@ -134,7 +134,7 @@ class Game(val creator:Player,val index:Int,val name:String,val numTeams:Int,val
 		//Envia o lookup MENOS para o time do jogador atual
 		for(t<- _teamList){
 			for(p<-t.getPlayers if p.isReady){
-				_sendPlayerMessage(p)
+				_sendPlayerMessage(p,cp)
 			}
 		}
 	}
@@ -149,15 +149,14 @@ class Game(val creator:Player,val index:Int,val name:String,val numTeams:Int,val
 	 * Inicia a proxima rodada
 	 */
 	protected def _nextRound(){
+		println("NO NEXT ROUND")
 		display(new Message("Começando uma nova rodada"))
 		this._currentTeam=this._roundCounter
 		val p:Player=_teamList(this._currentTeam).getNextPlayer()
 		//Pega o próximo jogador a falar a palavra
 		this._roundCounter=(this._roundCounter+1)%this.numTeams
 		this._currentPlayer=Some(p)
-		/**
-		 * @todo iniciar timer
-		 */
+		
 		this._nextPlay()
 	}
 	/**
@@ -178,22 +177,30 @@ class Game(val creator:Player,val index:Int,val name:String,val numTeams:Int,val
 	 * @todo implementar
 	 */
 	def _endGame(winnerIndex:Int){
-
+		for(i<-0 until this.numTeams){
+			if(i==winnerIndex){
+				for(p<-this._teamList(i).getPlayers){
+					new Reply(game.Won("Seu time venceu parabens!"))
+				}
+			}
+			else{
+				for(p<-this._teamList(i).getPlayers){
+					new Reply(game.Lost("O time "+winnerIndex+" venceu"))
+				}
+			}
+		}
 	}
 	/**
 	 * Falou a palavra Tabu TODOS outros times acertam
 	 */
-	def tabu(){
+	def tabu():Unit={
 		for(i<-0 until this.numTeams if i!=_currentTeam){
 			if(this._teamList(i).score()==this.maxScore){
 				this._endGame(i)
+				return
 			}
-			else{
-				this._nextRound
-				
-			}
-
 		}
+		this._nextRound
 	}
 	override def toString()={
 		index+" - "+name

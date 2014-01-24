@@ -41,6 +41,9 @@ class GameHall(val size:Int) extends CommandActor{
 				sender ! new Reply(new gameHall.JoinedGame("Entrou no jogo "+_gameBuffer(c.gameId).name+" com sucesso!"))
 
 			}
+			case _=>{
+
+			}
 
 		}
 	}

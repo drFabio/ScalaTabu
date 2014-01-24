@@ -145,7 +145,12 @@ package game.io.commands{
 
 		}
 
+		class Won(msg:String) extends Message (msg) with Command{
 
+		}
+		class Lost(msg:String) extends Message (msg) with Command{
+
+		}
 	}
 }
 
