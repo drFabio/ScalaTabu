@@ -34,4 +34,11 @@ class Team{
 		return _players.toList
 	}
 
+	def list():String={
+		var ret=""
+		for(p<-_players){
+			ret+="\n\t"+p.name
+		}
+		ret
+	}
 }

@@ -114,6 +114,9 @@ package game.io.commands{
 		class Correct extends Command{
 
 		}
+		class List extends Command{
+
+		}
 		/**
 		 * Pessoa do time falou a palavra tabu
 		 */
@@ -123,14 +126,14 @@ package game.io.commands{
 		/**
 		 * Vez de voce perceber se o cara falou a palavra tabu ou não
 		 */
-		class GuessWord extends Command{
+		class GuessWord(msg:String) extends Message (msg) with Command{
 
 		}
 		/**
 		 * Vez do jogador
 		 * @type {[type]}
 		 */
-		class YourTurn(tc:TabuCard) extends Command{
+		class YourTurn(val card:TabuCard,msg:String) extends Message (msg) with Command{
 
 		}
 		/**
@@ -138,7 +141,7 @@ package game.io.commands{
 		 * 
 		 * @type {[type]}
 		 */
-		class PayAtention(tc:TabuCard) extends Command{
+		class PayAtention(val card:TabuCard,msg:String) extends Message (msg) with Command{
 
 		}
 
@@ -169,19 +172,17 @@ package game.io {
 			loop{
 				react{
 					case h:Help=>help()
-					case cmd:Command =>{
+					case cmd:AbstractCommand =>{
 						try{
 							executeCommand(cmd)
 						}
 						catch{
 							case e:IllegalArgumentException=>{
+								e.printStackTrace
 								sender ! new Reply(new ErrorMessage(e))
 							}
 						}
 
-					} 
-					case m:Message=>{
-						display(m)
 					}
 				}
 			}
@@ -191,6 +192,9 @@ package game.io {
 		 */
 		def display(mess:Message){
 			println(mess)
+		}
+		def display(str:String){
+			println(str)
 		}
 
 	}

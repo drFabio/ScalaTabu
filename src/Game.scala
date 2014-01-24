@@ -23,15 +23,30 @@ class Game(val creator:Player,val index:Int,val name:String,val numTeams:Int,val
 				_connectionPlayerMap(c.connId).isReady=true
 				if(	_status==Status.Started){
 					_sendPlayerMessage(_connectionPlayerMap(c.connId))
-					println("JA ESTAVA OMOCOADP")
 				}
 				else if(_status==Status.WaitingPlayers && _canGameStart()){
 					_startGame()
-					println("ERA P INICIAR")
 				}
-				else{
-					println("N PODE INICIAR")
+				
+			}
+			case c:game.List=>{
+				var msg=""
+				for((x,i) <- _teamList.view.zipWithIndex ){
+					msg+="Time "+i+" "+x
 				}
+				sender ! new Reply(new Message(msg))
+			}
+			case c:game.Correct=>{
+				display(new Message("Palavra encontrada!"))
+				foundWord()
+			}
+			case c:game.Tabu=>{
+				display(new Message("TABU! Jogador disse palavra proibida"))
+				tabu()
+
+			}
+			case m:Message=>{
+				display(m)
 			}
 		}
 	}
@@ -93,14 +108,14 @@ class Game(val creator:Player,val index:Int,val name:String,val numTeams:Int,val
 	 */
 	protected def _sendPlayerMessage(p:Player,currentPlayer:Player){
 		if(p.teamId.get==currentPlayer.teamId.get){
-			p.actor ! new Reply(new game.PayAtention(_currentCard.get))
+			p.actor ! new Reply(new game.PayAtention(_currentCard.get,"É a vez do time adversário, fique atento para eles não dizerem as palavras tabu"))
 		}
 		else{
 			if(p==currentPlayer){
-				p.actor ! new Reply(new game.YourTurn(_currentCard.get))
+				p.actor ! new Reply(new game.YourTurn(_currentCard.get,"É a sua vez ,faça adivinhar a palavra sem dizer ela, as palavras tabu ou derivados"))
 			}
 			else{
-				p.actor !  new Reply(new game.GuessWord)
+				p.actor !  new Reply(new game.GuessWord("Advinhe a palavra de acordo com as dicas dadas"))
 			}
 		}
 	}
@@ -134,6 +149,7 @@ class Game(val creator:Player,val index:Int,val name:String,val numTeams:Int,val
 	 * Inicia a proxima rodada
 	 */
 	protected def _nextRound(){
+		display(new Message("Começando uma nova rodada"))
 		this._currentTeam=this._roundCounter
 		val p:Player=_teamList(this._currentTeam).getNextPlayer()
 		//Pega o próximo jogador a falar a palavra
@@ -148,6 +164,7 @@ class Game(val creator:Player,val index:Int,val name:String,val numTeams:Int,val
 	 * Achou uma palavra com sucesso definitivamente
 	 */
 	def foundWord(){
+
 		if(_teamList(this._currentTeam).score()==this.maxScore){
 			this._endGame(this._currentTeam)
 		}
@@ -167,7 +184,7 @@ class Game(val creator:Player,val index:Int,val name:String,val numTeams:Int,val
 	 * Falou a palavra Tabu TODOS outros times acertam
 	 */
 	def tabu(){
-		for(i<-0 until this.numTeams){
+		for(i<-0 until this.numTeams if i!=_currentTeam){
 			if(this._teamList(i).score()==this.maxScore){
 				this._endGame(i)
 			}

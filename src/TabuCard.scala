@@ -1,7 +1,9 @@
 package game.basics.cards
 
 class TabuCard(val word:String,val tabuWords:List[String]) extends Serializable{
-
+	override def toString()={
+		" Palavara ="+word+"\n Tabus "+tabuWords.mkString("\n - ")
+	}
 }
 object TabuDeck{
 	/**

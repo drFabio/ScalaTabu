@@ -15,7 +15,12 @@ class PlayerActor(protected val sock:Socket,val name:String) extends{
 	_currentRole=new GameHallPlayerCommand(this)
 	_currentRole.start
 	def sendMessage(str:String){
-		this.sendMessage(_currentRole.asInstanceOf[CLICommandActor].handleMessage(str))
+		try{
+				this.sendMessage(_currentRole.asInstanceOf[CLICommandActor].handleMessage(str))
+		}
+		catch{
+				case e:IllegalArgumentException=>_currentRole ! new ErrorMessage(e)
+			}
 	}
 	override def handleCommand(input:AbstractCommand)={
 		input match{
@@ -60,17 +65,21 @@ abstract class PlayerCLICommandActor(val pa:PlayerActor) extends CLICommandActor
 			}
 			case c:gameHall.CreatedGame=>{
 				display(c)
-				sender ! new GamePlayerCommand(pa)
+				val gpc=new GamePlayerCommand(pa)
+				gpc.start
+				sender ! gpc
 				sender ! new Reply(new game.IAmReady(pa.getConnId))
 			} 
 			case c:gameHall.JoinedGame=>{
 				display(c)
-				sender ! new GamePlayerCommand(pa)
+				val gpc=new GamePlayerCommand(pa)
+				gpc.start
+				sender ! gpc
 				sender ! new Reply(new game.IAmReady(pa.getConnId))
 
 			}
 			case m:Message=>{
-				dísplay(m)
+				display(m)
 			}
 		
 		}
@@ -82,18 +91,50 @@ abstract class PlayerCLICommandActor(val pa:PlayerActor) extends CLICommandActor
  * @type {[type]}
  */
 class GamePlayerCommand( pa:PlayerActor) extends PlayerCLICommandActor(pa){
+	var status=Status.guess
 	def interpretCommand(cmd:List[(String,Option[String])]):AbstractCommand={
 		cmd match{
 			case (h,_)::_ if (h=="h")=>new Help()
+			case (c,_)::_ if (c=="c")=>{
+				if(status!=Status.mine){
+					throw new IllegalArgumentException("Comando inválido no momento")
+				}
+				new game.Correct
+			}
+			case (t,_)::_ if (t=="t")=>{
+				if(status!=Status.atention){
+					throw new IllegalArgumentException("Comando inválido no momento")
+				}
+				new game.Tabu
+			}
+			case (l,_)::_ if (l=="l")=>{
+				new game.List
+			}
+
 		}
 
 	}
 	def executeCommand(cmd:AbstractCommand){
 		cmd match{
+			case c:game.PayAtention=>{
+				status=Status.atention
+				display(c+"\n"+c.card)
+			}
+			case c:game.YourTurn=>{
+				status=Status.mine
+				display(c+"\n"+c.card)
+			}
+			case c:game.GuessWord=>{
+				status=Status.guess
+				display(c)
+			}
 			case m:Message=>{
-				dísplay(m)
+				display(m)
 			}
 		}
+	}
+	object Status extends Enumeration{
+		val atention,guess,mine=Value
 	}
 
 }
