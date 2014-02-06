@@ -8,14 +8,11 @@ import game.basics._
 /**
 * Ator que cuida da obtenção de comandos vindo do socket
 */
-class receiverActor(gh:GameHall,protected val sock:Socket,val connId:Int) extends {
-	//Early initializer
-}
- with SocketActor{
+class receiverActor(gh:GameHall,protected val sock:Socket,val connId:Int)  extends {} with SocketActor{
  	protected var _name:String=null
 	_currentRole=gh
 	/**
-	*Envia a mensagem de boas vindas e pergunta o nome
+	*Envia a mensagem de boas vindas 
 	*/
  	def sendHello(name:String){
 		
@@ -46,7 +43,6 @@ object TabuServer{
 		try{
 			val port=1337
 			println("Iniciando servidor na porta "+port)
-		//	val gh=new GameHall
 			val server = new ServerSocket(port)
 			var connId=0
 			while (true) {

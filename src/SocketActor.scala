@@ -12,9 +12,7 @@ import game.io.commands._
  * Lida com o recebimento e envio de mensagens de texto, parseando comandos e mensagens
  */
 trait SocketActor extends Actor{
-	/**
-	 * @note Usando def em trait para inicialização tardia
-	 */
+	
 	protected def sock:Socket
 	/**
 	 * Papel que estamos desenpenhando atualmente
@@ -40,7 +38,7 @@ trait SocketActor extends Actor{
 				}
 				
 				case ca:CommandActor=>{
-					changeHandler(ca)
+					changeRole(ca)
 				}
 			
 			}
@@ -49,17 +47,14 @@ trait SocketActor extends Actor{
 	internalHandler.start()
 
 
-	// protected val in:BufferedReader=new BufferedReader(new InputStreamReader(this.sock.getInputStream()))
-	// protected val out:PrintWriter= new PrintWriter(this.sock.getOutputStream(), true)
 	/**
-	 * Ação principal desse socket actor, simplesmente le inputs eternamente e lida com eles
+	 * Le inputs vindo de um socket e lida com eles
 	 */
 	def act(){
 		try{
 			
 			var ok=true
 			while(ok){
-				// var input=in.readLine
 				var input=oin.readObject
 				if(input==null){ //fim da stream ou erro provavelmente
 					ok=false
@@ -89,24 +84,22 @@ trait SocketActor extends Actor{
 		}
 
 	}
-
-	def changeHandler(ca:CommandActor){
+	//Muda o papel atual
+	def changeRole(ca:CommandActor){
 		_currentRole=ca
 	}
-
+	//Envia uma mensagem para o outro lado do socket
 	def sendMessage(mess:AbstractCommand){
 		oout.writeObject(mess)
 	}
 	/**
 	 * Lida com o input recebifo via socket
-	 * @type {[type]}
 	 */
 	def handleInput(input:AbstractCommand)={
 		internalHandler ! input
 	}
 	/**
-	 * Lida com um comando vindo do handler
-	 * @type {[type]}
+	 * Lida com um comando vindo do papel atual
 	 */
 	def handleCommand(input:AbstractCommand)={
 

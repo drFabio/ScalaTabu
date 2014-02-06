@@ -2,7 +2,10 @@ package game.basics
 import game.io.commands._
 import  cards.TabuCard
 import  cards.TabuDeck
-
+/**
+ * Uma instancai de jogos
+ * @type {[type]}
+ */
 class Game(val creator:Player,val index:Int,val name:String,val numTeams:Int,val maxScore:Int) extends _root_.game.io.CommandActor{
 	protected val _teamList:Array[Team]=Array.fill(numTeams){new Team()}
 	protected var _joinCounter=0
@@ -32,7 +35,8 @@ class Game(val creator:Player,val index:Int,val name:String,val numTeams:Int,val
 			case c:game.List=>{
 				var msg=""
 				for((x,i) <- _teamList.view.zipWithIndex ){
-					msg+="Time "+i+" "+x
+					msg+="Time "+i+" "+x.list+"\n"
+
 				}
 				sender ! new Reply(new Message(msg))
 			}

@@ -5,7 +5,7 @@ import scala.actors.Actor._
 import game.io.commands._
 
 /**
-* Holds the several players 
+* Salaão de jogos
 */
 class GameHall(val size:Int) extends CommandActor{
 	def help(){

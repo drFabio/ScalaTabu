@@ -1,5 +1,6 @@
 package game.basics
 import scala.actors.Actor
+//Um jogador
 class Player(val actor:Actor,val name:String,val connId:Int){
 	protected var _teamId:Option[Int]=None
 	protected var _isReady:Boolean=false
